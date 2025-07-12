@@ -14,20 +14,20 @@ const contactMethods = [
   {
     icon: icons.Email,
     title: "Email",
-    value: "email@example.com",
-    href: "mailto:email@example.com",
+    value: "codewithardi@gmail.com",
+    href: "mailto:codewithardi@gmail.com",
   },
   {
     icon: icons.GitHub,
     title: "GitHub",
-    value: "github.com/your-profile",
-    href: "#",
+    value: "www.github.com/ardinur03",
+    href: "https://github.com/ardinur03",
   },
   {
     icon: icons.LinkedIn,
     title: "LinkedIn",
-    value: "linkedin.com/in/your-profile",
-    href: "#",
+    value: "www.linkedin.com/in/ardinur",
+    href: "https://www.linkedin.com/in/ardinur/",
   },
 ];
 
