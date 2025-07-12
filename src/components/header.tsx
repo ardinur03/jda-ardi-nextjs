@@ -16,7 +16,7 @@ import {
 
 const navLinks = [
   { href: "#", label: "Beranda" },
-  { href: "#tentang", label: "Tentang" },
+  { href: "/about", label: "Tentang" },
   { href: "#service", label: "Service" },
   { href: "#project", label: "Project" },
   { href: "#kontak", label: "Kontak" },
