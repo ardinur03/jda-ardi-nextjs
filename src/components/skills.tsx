@@ -2,6 +2,8 @@
 
 import { Smartphone, Globe, HardDrive, Sparkles } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { Button } from "./ui/button";
+import Link from "next/link";
 
 const services = [
   {
@@ -60,6 +62,14 @@ export function Skills() {
               </Card>
             );
           })}
+        </div>
+        
+        <div className="mt-16 text-center">
+            <Button asChild size="lg" className="shadow-lg transition-shadow hover:shadow-xl">
+                <Link href="/service">
+                    Lihat Semua Layanan
+                </Link>
+            </Button>
         </div>
       </div>
     </section>
