@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Menu } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -14,15 +15,25 @@ import {
   SheetClose,
 } from "@/components/ui/sheet";
 
-const navLinks = [
-  { href: "#", label: "Beranda" },
-  { href: "/about", label: "Tentang" },
-  { href: "#service", label: "Service" },
-  { href: "#project", label: "Project" },
-  { href: "#kontak", label: "Kontak" },
+const baseNavLinks = [
+  { href: "/#home", label: "Home" },
+  { href: "/about", label: "About" },
+  { href: "/#service", label: "Service" },
+  { href: "/#project", label: "Project" },
+  { href: "/#kontak", label: "Kontak" },
 ];
 
 export function Header() {
+
+  const pathname = usePathname();
+
+  const navLinks = baseNavLinks.map(link => {
+    if (pathname === '/' && link.href.includes('/#')) {
+      return { ...link, href: link.href.replace('/#', '#') };
+    }
+    return link;
+  });
+
   return (
     <header
       className={cn(
