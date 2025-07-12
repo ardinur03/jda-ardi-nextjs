@@ -16,7 +16,6 @@ export function About() {
               width={600}
               height={600}
               className="object-cover"
-              data-ai-hint="developer workspace"
             />
             <div className="absolute -bottom-4 -right-4 h-full w-full rounded-xl border-2 border-border -z-10"></div>
           </div>

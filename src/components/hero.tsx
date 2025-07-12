@@ -81,7 +81,6 @@ export function Hero() {
               width={400}
               height={400}
               className="object-cover"
-              data-ai-hint="profile photo"
               priority
             />
           </div>
