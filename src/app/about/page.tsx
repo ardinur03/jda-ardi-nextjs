@@ -22,7 +22,6 @@ export default function AboutPage() {
                 width={500}
                 height={500}
                 className="rounded-lg object-cover"
-                data-ai-hint="developer workspace"
               />
                <div className="absolute -bottom-4 -right-4 h-full w-full rounded-xl border-2 border-border -z-10"></div>
             </div>
@@ -60,7 +59,6 @@ export default function AboutPage() {
                 width={500}
                 height={500}
                 className="rounded-lg object-cover shadow-lg"
-                 data-ai-hint="founder portrait"
               />
               <div className="absolute -bottom-4 -left-4 h-full w-full rounded-xl border-2 border-border -z-10"></div>
             </div>
