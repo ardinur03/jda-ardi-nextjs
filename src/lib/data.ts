@@ -1,5 +1,18 @@
-export const projectData = [
+export interface Project {
+  id: string;
+  slug: string;
+  title: string;
+  category: string;
+  image: string;
+  description: string;
+  longDescription: string;
+  tags: string[];
+  livePreview: string;
+}
+
+export const projectData: Project[] =[
   {
+    id: "1",
     title: "Website Portfolio ardi.blue",
     image: "/products/ardi-blue.png",
     slug: "website-portfolio",
@@ -13,6 +26,7 @@ export const projectData = [
   },
  
   {
+    id: "2",
     title: "Aplikasi Absensi Akademik Polban",
     image: "/products/absensi-app.jpg",
     slug: "aplikasi-absensi-akademik-polban",
@@ -25,6 +39,7 @@ export const projectData = [
     tags: ["Mobile App", "React Native", "API", "Lumen"],
   },
    {
+    id: "3",
     title: "Web Portfolio Tech",
     image: "/products/nadia-salsa.png",
     slug: "web-portfolio-tech",
