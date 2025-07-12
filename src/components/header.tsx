@@ -18,8 +18,9 @@ import {
 const baseNavLinks = [
   { href: "/#home", label: "Home" },
   { href: "/about", label: "About" },
-  { href: "/#service", label: "Service" },
+  { href: "/service", label: "Service" },
   { href: "/#project", label: "Project" },
+  { href: "/faq", label: "FAQ" },
   { href: "/#kontak", label: "Kontak" },
 ];
 
@@ -28,6 +29,9 @@ export function Header() {
   const pathname = usePathname();
 
   const navLinks = baseNavLinks.map(link => {
+    if (pathname !== '/' && link.href.includes('/#')) {
+      return { ...link, href: `/${link.href.slice(1)}` };
+    }
     if (pathname === '/' && link.href.includes('/#')) {
       return { ...link, href: link.href.replace('/#', '#') };
     }
