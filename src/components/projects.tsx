@@ -68,7 +68,7 @@ export function Projects() {
             {filteredProjects.map((project) => (
               <Tooltip key={project.title}>
                 <TooltipTrigger asChild>
-                  <Link href={`/project/${project.slug}`} className="group">
+                  <Link href={`/project/${project.id}`} className="group">
                     <Card className="flex h-full cursor-pointer flex-col overflow-hidden rounded-xl border-2 border-transparent bg-card shadow-lg transition-all duration-300 hover:border-accent hover:shadow-2xl">
                       <div className="relative h-48 w-full overflow-hidden">
                         <Image
