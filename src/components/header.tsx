@@ -22,6 +22,7 @@ const baseNavLinks = [
   { href: "/#project", label: "Project" },
   { href: "/faq", label: "FAQ" },
   { href: "/#kontak", label: "Kontak" },
+  { href: "/admin/projects", label: "Admin" },
 ];
 
 export function Header() {
