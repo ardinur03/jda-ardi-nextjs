@@ -12,7 +12,7 @@ export interface Project {
 
 export const projectData: Project[] =[
   {
-    id: "1",
+    id: "5c4aef26-0b18-4301-bbc6-fa6bf831520b",
     title: "Website Portfolio ardi.blue",
     image: "/products/ardi-blue.png",
     slug: "website-portfolio",
@@ -26,7 +26,7 @@ export const projectData: Project[] =[
   },
  
   {
-    id: "2",
+    id: "3c070fdb-ae6f-421a-9c46-f53801354003",
     title: "Aplikasi Absensi Akademik Polban",
     image: "/products/absensi-app.jpg",
     slug: "aplikasi-absensi-akademik-polban",
@@ -39,7 +39,7 @@ export const projectData: Project[] =[
     tags: ["Mobile App", "React Native", "API", "Lumen"],
   },
    {
-    id: "3",
+    id: "0faa4daf-40bd-4192-8b3c-54586bd5b029",
     title: "Web Portfolio Tech",
     image: "/products/nadia-salsa.png",
     slug: "web-portfolio-tech",

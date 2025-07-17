@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   Card,
@@ -19,8 +19,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "./ui/tooltip";
-import { projectData } from "@/lib/data";
-
+import type { Project } from "@/lib/data";
 
 const filters = {
   all: "All",
@@ -31,8 +30,29 @@ const filters = {
 
 export function Projects() {
   const [activeFilter, setActiveFilter] = useState("all");
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const filteredProjects = projectData.filter((project) =>
+  useEffect(() => {
+    async function fetchProjects() {
+      try {
+        const response = await fetch('/api/projects');
+        if (!response.ok) {
+          throw new Error('Failed to fetch projects');
+        }
+        const { data } = await response.json();
+        setProjects(data);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchProjects();
+  }, []);
+
+  const filteredProjects = projects.filter((project) =>
     activeFilter === "all"
       ? true
       : project.category.toLowerCase() === activeFilter
@@ -65,46 +85,67 @@ export function Projects() {
 
         <TooltipProvider>
           <div className="mt-12 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-            {filteredProjects.map((project) => (
-              <Tooltip key={project.title}>
-                <TooltipTrigger asChild>
-                  <Link href={`/project/${project.id}`} className="group">
-                    <Card className="flex h-full cursor-pointer flex-col overflow-hidden rounded-xl border-2 border-transparent bg-card shadow-lg transition-all duration-300 hover:border-accent hover:shadow-2xl">
-                      <div className="relative h-48 w-full overflow-hidden">
-                        <Image
-                          src={project.image}
-                          alt={project.title}
-                          width={600}
-                          height={400}
-                          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                        />
-                      </div>
-                      <CardHeader>
-                        <CardTitle className="font-headline text-xl">
-                          {project.title}
-                        </CardTitle>
-                        <CardDescription>{project.category}</CardDescription>
-                      </CardHeader>
-                      <CardContent className="flex-grow">
-                        <p className="text-sm text-muted-foreground line-clamp-3">
-                          {project.description}
-                        </p>
-                      </CardContent>
-                      <CardFooter className="flex-wrap gap-2">
-                        {project.tags.slice(0, 3).map((tag) => (
-                          <Badge key={tag} variant="secondary">
-                            {tag}
-                          </Badge>
-                        ))}
-                      </CardFooter>
-                    </Card>
-                  </Link>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p className="max-w-xs">Klik untuk melihat detail</p>
-                </TooltipContent>
-              </Tooltip>
-            ))}
+            {loading ? (
+              Array.from({ length: 3 }).map((_, i) => (
+                <Card key={i} className="flex h-full flex-col overflow-hidden rounded-xl bg-card shadow-lg">
+                  <div className="relative h-48 w-full bg-muted animate-pulse"></div>
+                  <CardHeader>
+                    <div className="h-6 w-3/4 rounded bg-muted animate-pulse"></div>
+                    <div className="h-4 w-1/2 rounded bg-muted animate-pulse mt-2"></div>
+                  </CardHeader>
+                  <CardContent className="flex-grow">
+                    <div className="h-4 w-full rounded bg-muted animate-pulse mb-2"></div>
+                    <div className="h-4 w-full rounded bg-muted animate-pulse mb-2"></div>
+                    <div className="h-4 w-2/3 rounded bg-muted animate-pulse"></div>
+                  </CardContent>
+                  <CardFooter className="flex-wrap gap-2">
+                    <div className="h-6 w-16 rounded-full bg-muted animate-pulse"></div>
+                    <div className="h-6 w-20 rounded-full bg-muted animate-pulse"></div>
+                  </CardFooter>
+                </Card>
+              ))
+            ) : (
+              filteredProjects.map((project) => (
+                <Tooltip key={project.title}>
+                  <TooltipTrigger asChild>
+                    <Link href={`/project/${project.id}`} className="group">
+                      <Card className="flex h-full cursor-pointer flex-col overflow-hidden rounded-xl border-2 border-transparent bg-card shadow-lg transition-all duration-300 hover:border-accent hover:shadow-2xl">
+                        <div className="relative h-48 w-full overflow-hidden">
+                          <Image
+                            src={project.image}
+                            alt={project.title}
+                            width={600}
+                            height={400}
+                            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                          />
+                        </div>
+                        <CardHeader>
+                          <CardTitle className="font-headline text-xl">
+                            {project.title}
+                          </CardTitle>
+                          <CardDescription>{project.category}</CardDescription>
+                        </CardHeader>
+                        <CardContent className="flex-grow">
+                          <p className="text-sm text-muted-foreground line-clamp-3">
+                            {project.description}
+                          </p>
+                        </CardContent>
+                        <CardFooter className="flex-wrap gap-2">
+                          {project.tags?.slice(0, 3).map((tag) => (
+                            <Badge key={tag} variant="secondary">
+                              {tag}
+                            </Badge>
+                          ))}
+                        </CardFooter>
+                      </Card>
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="max-w-xs">Klik untuk melihat detail</p>
+                  </TooltipContent>
+                </Tooltip>
+              ))
+            )}
           </div>
         </TooltipProvider>
       </div>
