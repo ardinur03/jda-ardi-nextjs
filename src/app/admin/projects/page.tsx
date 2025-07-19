@@ -374,7 +374,7 @@ export default function AdminProjectsPage() {
               {formErrors.longDescription && <p className="text-sm text-destructive mt-1">{formErrors.longDescription}</p>}
             </div>
 
-            <div>
+            {/* <div>
               <Label htmlFor="image">Image</Label>
               <div className="mt-2 flex items-center gap-4">
                   {formData.image ? (
@@ -399,7 +399,7 @@ export default function AdminProjectsPage() {
                     <p className="text-xs text-muted-foreground mt-2">Upload a project image.</p>
                   </div>
               </div>
-            </div>
+            </div> */}
 
             <div>
               <Label htmlFor="livePreview">Live Preview URL</Label>
