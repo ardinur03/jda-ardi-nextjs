@@ -1,7 +1,6 @@
-// src/app/api/projects/[id]/route.ts
 import { NextResponse } from 'next/server';
-// Import projects from the main route file to ensure it's the same instance.
-import { projects } from '../route';
+import { supabase } from '@/lib/supabase';
+import { z } from 'zod';
 
 type Params = {
   params: {
@@ -9,63 +8,95 @@ type Params = {
   };
 };
 
-// GET a single project by ID
-export async function GET(request: Request, { params }: Params) {
-  const project = projects.find((p) => p.id === params.id);
+const projectUpdateSchema = z.object({
+    title: z.string().min(1, 'Title is required').optional(),
+    description: z.string().min(1, 'Description is required').optional(),
+    category: z.string().min(1, 'Category is required').optional(),
+    longDescription: z.string().min(1, 'Long description is required').optional(),
+    tags: z.array(z.string()).optional(),
+    livePreview: z.string().optional(),
+    image: z.string().optional(),
+});
 
-  if (!project) {
+
+// GET satu proyek berdasarkan ID
+export async function GET(request: Request, { params }: Params) {
+  const { id } = params;
+  const { data, error } = await supabase
+    .from('projects')
+    .select('*')
+    .eq('id', id)
+    .single();
+
+  if (error || !data) {
     return NextResponse.json({ message: 'Project not found', data: null, status: 'error' }, { status: 404 });
   }
 
-  return NextResponse.json({ message: 'Project retrieved successfully', data: project, status: 'success' });
+  return NextResponse.json({ message: 'Project retrieved successfully', data, status: 'success' });
 }
 
-// PUT (update) a project by ID
+// PUT (update) proyek berdasarkan ID
 export async function PUT(request: Request, { params }: Params) {
-    const projectIndex = projects.findIndex((p) => p.id === params.id);
-
-    if (projectIndex === -1) {
-        return NextResponse.json({ message: 'Project not found', data: null, status: 'error' }, { status: 404 });
-    }
+    const { id } = params;
 
     try {
-        const { title, description, category } = await request.json();
+        const body = await request.json();
+        const parsed = projectUpdateSchema.safeParse(body);
 
-        if (title === undefined && description === undefined && category === undefined) {
-            return NextResponse.json({ message: 'At least one field (title, description, category) must be provided', data: null, status: 'error' }, { status: 400 });
+        if (!parsed.success) {
+            return NextResponse.json({ message: 'Invalid input', data: null, status: 'error', issues: parsed.error.issues }, { status: 400 });
         }
+
+        const updateData: any = { ...parsed.data };
         
-        // Directly modify the project in the imported array
-        const projectToUpdate = projects[projectIndex];
-
-        if (title !== undefined) {
-            projectToUpdate.title = title;
+        // Atasi nilai kosong untuk optional fields
+        if (updateData.livePreview === '') {
+            updateData.livePreview = '#';
+        }
+        if (updateData.image === '') {
+            updateData.image = 'https://placehold.co/600x400.png';
         }
 
-        if (description !== undefined) {
-            projectToUpdate.description = description;
+        // Buat slug baru jika title berubah
+        if (parsed.data.title) {
+            updateData.slug = parsed.data.title.toLowerCase().replace(/\s+/g, '-').slice(0, 50);
         }
 
-        if (category !== undefined) {
-          projectToUpdate.category = category;
+        const { data: updatedProject, error } = await supabase
+            .from('projects')
+            .update(updateData)
+            .eq('id', id)
+            .select()
+            .single();
+
+        if (error) {
+            if (error.code === 'P2025') { // Kode Supabase untuk "record not found"
+                return NextResponse.json({ message: 'Project not found', data: null, status: 'error' }, { status: 404 });
+            }
+            throw error;
         }
 
-        return NextResponse.json({ message: 'Project updated successfully', data: projectToUpdate, status: 'success' });
+        return NextResponse.json({ message: 'Project updated successfully', data: updatedProject, status: 'success' });
 
-    } catch (error) {
-        return NextResponse.json({ message: 'Invalid request body', data: null, status: 'error' }, { status: 400 });
+    } catch (error: any) {
+        return NextResponse.json({ message: error.message || 'Failed to update project', data: null, status: 'error' }, { status: 500 });
     }
 }
 
-// DELETE a project by ID
+// DELETE proyek berdasarkan ID
 export async function DELETE(request: Request, { params }: Params) {
-    const projectIndex = projects.findIndex((p) => p.id === params.id);
+    const { id } = params;
 
-    if (projectIndex === -1) {
-        return NextResponse.json({ message: 'Project not found', data: null, status: 'error' }, { status: 404 });
+    const { data: deletedProject, error } = await supabase
+        .from('projects')
+        .delete()
+        .eq('id', id)
+        .select()
+        .single();
+    
+    if (error || !deletedProject) {
+        return NextResponse.json({ message: 'Project not found or could not be deleted', data: null, status: 'error' }, { status: 404 });
     }
 
-    const deletedProject = projects.splice(projectIndex, 1);
-
-    return NextResponse.json({ message: 'Project deleted successfully', data: deletedProject[0], status: 'success' });
+    return NextResponse.json({ message: 'Project deleted successfully', data: deletedProject, status: 'success' });
 }
