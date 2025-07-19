@@ -25,3 +25,6 @@ export const faqData = [
         "Ya, kami menawarkan paket dukungan dan pemeliharaan pasca-launch untuk memastikan aplikasi Anda tetap terupdate, aman, dan berkinerja optimal. Kami dapat mendiskusikan rencana dukungan yang sesuai dengan kebutuhan Anda.",
     },
   ];
+
+
+  
