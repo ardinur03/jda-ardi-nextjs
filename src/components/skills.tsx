@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
 import Link from "next/link";
 
-const services = [
+const service = [
   {
     title: "Aplikasi",
     description:
@@ -39,7 +39,7 @@ export function Skills() {
           </p>
         </div>
         <div className="mt-16 grid grid-cols-1 gap-8 md:grid-cols-3">
-          {services.map((feature) => {
+          {service.map((feature) => {
             const Icon = feature.icon || Sparkles;
             return (
               <Card

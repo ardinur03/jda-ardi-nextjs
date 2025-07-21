@@ -4,7 +4,7 @@ import { Breadcrumb } from '@/components/breadcrumb';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
-const services = [
+const service = [
   {
     icon: Smartphone,
     image: '/services/mobile-app.svg',
@@ -31,7 +31,7 @@ const services = [
 export default function ServicesPage() {
     const breadcrumbItems = [
         { href: '/', label: 'Home' },
-        { href: '/services', label: 'Services', isCurrent: true },
+        { href: '/service', label: 'Services', isCurrent: true },
       ];
 
   return (
@@ -43,12 +43,12 @@ export default function ServicesPage() {
             Our Services
           </h1>
           <p className="mt-6 max-w-3xl text-lg text-muted-foreground">
-            We provide comprehensive digital solutions to meet your business needs, from mobile apps to complex installations. Explore our services to see how we can help you succeed.
+            We provide comprehensive digital solutions to meet your business needs, from mobile apps to complex installations. Explore our service to see how we can help you succeed.
           </p>
         </div>
 
         <div className="space-y-24">
-            {services.map((service, index) => (
+            {service.map((service, index) => (
                 <div key={service.title} className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-24 items-center">
                     <div className={`relative flex items-center justify-center ${index % 2 === 1 ? 'md:order-2' : ''}`}>
                         <div className="relative">
@@ -80,7 +80,7 @@ export default function ServicesPage() {
                 Mari bekerja sama mewujudkan ide-ide Anda. Hubungi kami hari ini untuk mendiskusikan proyek Anda dan dapatkan konsultasi gratis.
             </p>
             <Button asChild size="lg" className="mt-8 shadow-lg transition-shadow hover:shadow-xl">
-                <Link href="/#kontak">
+                <Link href="/#contact">
                     Get in Touch
                 </Link>
             </Button>
