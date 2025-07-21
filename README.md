@@ -1,6 +1,5 @@
 # JDA - Muhamad Ardi Nur Insan
 
-## Detail Tugas 5
+## Detail Tugas 6
 
-### Database  : Supabase
-### Link CRUD : /admin/projects 
+### Implementasi Redux dengan studi kasus crud pada testimonial
