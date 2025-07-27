@@ -1,0 +1,38 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-1.1.x"]
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String?
+  email     String?  @unique
+  password  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@map("users")
+}
+
+model Project {
+  id              String   @id @default(uuid()) @db.Uuid
+  slug            String?  @db.VarChar
+  title           String?  @db.VarChar
+  category        String?  @db.VarChar
+  image           String?  @db.VarChar
+  description     String?  @db.VarChar
+  longDescription String?  @db.Text
+  tags            String[] @db.VarChar
+  livePreview     String?  @db.VarChar
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@map("projects")
+}

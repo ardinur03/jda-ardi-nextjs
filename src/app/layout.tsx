@@ -7,6 +7,7 @@ import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
 import { Toaster } from "@/components/ui/toaster"
 import { ReduxProvider } from '@/redux/provider';
+import AuthProvider from '@/components/auth-provider';
 
 const fontBody = Inter({
   subsets: ['latin'],
@@ -47,19 +48,21 @@ export default function RootLayout({
         )}
         suppressHydrationWarning={true}
       >
-        <ReduxProvider>
-            <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-            >
-            <Header />
-            {children}
-            <Footer />
-            <Toaster />
-            </ThemeProvider>
-        </ReduxProvider>
+        <AuthProvider>
+          <ReduxProvider>
+              <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              disableTransitionOnChange
+              >
+              <Header />
+              {children}
+              <Footer />
+              <Toaster />
+              </ThemeProvider>
+          </ReduxProvider>
+        </AuthProvider>
       </body>
     </html>
   );

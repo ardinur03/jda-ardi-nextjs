@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu } from "lucide-react";
+import { Menu, LogIn, LogOut } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { cn } from "@/lib/utils";
@@ -14,6 +14,7 @@ import {
   SheetTrigger,
   SheetClose,
 } from "@/components/ui/sheet";
+import { signIn, signOut, useSession } from "next-auth/react";
 
 const navLinksRaw = [
   { href: "/#home", label: "Home" },
@@ -23,7 +24,9 @@ const navLinksRaw = [
   { href: "/faq", label: "FAQ" },
   { 
     label: "Admin", 
+    auth: true, 
     subLinks: [
+        { href: "/dashboard", label: "Dashboard" },
         { href: "/admin/projects", label: "Manage Projects" },
         { href: "/admin/testimonials", label: "Manage Testimonials" },
     ]
@@ -34,21 +37,24 @@ const navLinksRaw = [
 
 export function Header() {
   const pathname = usePathname();
+  const { data: session } = useSession();
 
-  const mobileNavLinks = navLinksRaw.map(link => {
-    const processHref = (href: string) => {
-        if (pathname !== '/' && href.includes('/#')) {
-            return `/${href.slice(1)}`;
+  const mobileNavLinks = navLinksRaw
+    .filter(link => !link.auth || (link.auth && session))
+    .map(link => {
+        const processHref = (href: string) => {
+            if (pathname !== '/' && href.includes('/#')) {
+                return `/${href.slice(1)}`;
+            }
+            if (pathname === '/' && href.includes('/#')) {
+                return href.replace('/#', '#');
+            }
+            return href;
+        };
+        if (link.subLinks) {
+            return {...link, subLinks: link.subLinks.map(sl => ({...sl, href: processHref(sl.href)}))};
         }
-        if (pathname === '/' && href.includes('/#')) {
-            return href.replace('/#', '#');
-        }
-        return href;
-    };
-    if (link.subLinks) {
-        return {...link, subLinks: link.subLinks.map(sl => ({...sl, href: processHref(sl.href)}))};
-    }
-    return {...link, href: processHref(link.href!)};
+        return {...link, href: processHref(link.href!)};
   });
 
 
@@ -64,8 +70,10 @@ export function Header() {
         {/* Desktop Navigation */}
         <div className="hidden items-center gap-6 md:flex">
           <nav className="flex items-center gap-6">
-            {navLinksRaw.map((link) => (
-              link.subLinks ? (
+            {navLinksRaw.map((link) => {
+              if (link.auth && !session) return null;
+              
+              return link.subLinks ? (
                 <div key={link.label} className="relative group">
                   <span className="cursor-pointer text-sm font-medium text-foreground/80 transition-colors hover:text-foreground">
                     {link.label}
@@ -93,9 +101,18 @@ export function Header() {
                   {link.label}
                 </Link>
               )
-            ))}
+            })}
           </nav>
           <div className="flex items-center gap-1">
+            {session ? (
+                <Button variant="ghost" size="icon" onClick={() => signOut()}>
+                    <LogOut />
+                </Button>
+            ) : (
+                <Button variant="ghost" size="icon" onClick={() => signIn()}>
+                    <LogIn />
+                </Button>
+            )}
             <ThemeToggle />
           </div>
         </div>
@@ -145,6 +162,11 @@ export function Header() {
                   ))}
                 </nav>
                 <div className="mt-auto flex items-center justify-start gap-2 border-t p-4">
+                    {session ? (
+                        <Button onClick={() => signOut()} className="w-full">Logout</Button>
+                    ) : (
+                         <Button onClick={() => signIn()} className="w-full">Login</Button>
+                    )}
                     <ThemeToggle />
                 </div>
               </div>
