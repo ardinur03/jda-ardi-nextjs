@@ -1,15 +1,11 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
-  binaryTargets = ["native", "debian-openssl-1.1.x"]
+  output   = "../prisma/generated"
 }
 
 datasource db {
   provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  url  	    = env("DATABASE_URL")
 }
 
 model User {
@@ -33,6 +29,5 @@ model Project {
   tags            String[] @db.VarChar
   livePreview     String?  @db.VarChar
   createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
-
   @@map("projects")
 }
