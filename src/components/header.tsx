@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -19,17 +20,20 @@ import { signIn, signOut, useSession } from "next-auth/react";
 const navLinksRaw = [
   { href: "/#home", label: "Home" },
   { href: "/about", label: "About" },
-  { href: "/service", label: "Services" },
+  { href: "/services", label: "Services" },
   { href: "/#projects", label: "Projects" },
   { href: "/faq", label: "FAQ" },
   { 
-    label: "Admin", 
+    label: "Admin",
     auth: true, 
-    subLinks: [
-        { href: "/dashboard", label: "Dashboard" },
-        { href: "/admin/projects", label: "Manage Projects" },
-        { href: "/admin/testimonials", label: "Manage Testimonials" },
-    ]
+    role: "ADMIN",
+    href: "/admin/dashboard",
+  },
+   { 
+    label: "Dashboard",
+    auth: true, 
+    role: "MEMBER",
+    href: "/dashboard",
   },
   { href: "/#contact", label: "Contact" },
 ];
@@ -39,29 +43,44 @@ export function Header() {
   const pathname = usePathname();
   const { data: session } = useSession();
 
-  const mobileNavLinks = navLinksRaw
-    .filter(link => !link.auth || (link.auth && session))
-    .map(link => {
-        const processHref = (href: string) => {
-            if (pathname !== '/' && href.includes('/#')) {
-                return `/${href.slice(1)}`;
-            }
-            if (pathname === '/' && href.includes('/#')) {
-                return href.replace('/#', '#');
-            }
-            return href;
-        };
-        if (link.subLinks) {
-            return {...link, subLinks: link.subLinks.map(sl => ({...sl, href: processHref(sl.href)}))};
-        }
-        return {...link, href: processHref(link.href!)};
-  });
+  const getNavLinks = (isMobile: boolean) => {
+    return navLinksRaw
+      .filter(link => {
+        if (pathname.startsWith('/admin') || pathname.startsWith('/dashboard')) return false;
+        if (!link.auth) return true;
+        if (!session) return false;
+        if (link.role) return session.user.role === link.role;
+        return true;
+      })
+      .map(link => {
+          const processHref = (href: string) => {
+              if (isMobile) {
+                if (pathname !== '/' && href.includes('/#')) {
+                    return `/${href.slice(1)}`;
+                }
+                if (pathname === '/' && href.includes('/#')) {
+                    return href.replace('/#', '#');
+                }
+              }
+              return href;
+          };
+          
+          if (link.href) {
+            return {...link, href: processHref(link.href)};
+          }
+          return link;
+    });
+  };
+
+  const desktopNavLinks = getNavLinks(false);
+  const mobileNavLinks = getNavLinks(true);
 
 
   return (
     <header
       className={cn(
-        "sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur-lg"
+        "sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur-lg",
+         (pathname.startsWith('/admin') || pathname.startsWith('/dashboard')) && "hidden"
       )}
     >
       <div className="container mx-auto flex h-20 items-center justify-between px-4 sm:px-6 lg:px-8">
@@ -70,29 +89,7 @@ export function Header() {
         {/* Desktop Navigation */}
         <div className="hidden items-center gap-6 md:flex">
           <nav className="flex items-center gap-6">
-            {navLinksRaw.map((link) => {
-              if (link.auth && !session) return null;
-              
-              return link.subLinks ? (
-                <div key={link.label} className="relative group">
-                  <span className="cursor-pointer text-sm font-medium text-foreground/80 transition-colors hover:text-foreground">
-                    {link.label}
-                  </span>
-                  <div className="absolute left-0 mt-2 w-48 rounded-md shadow-lg bg-popover text-popover-foreground opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
-                    <div className="py-1">
-                      {link.subLinks.map(subLink => (
-                        <Link
-                          key={subLink.href}
-                          href={subLink.href}
-                          className="block px-4 py-2 text-sm text-foreground/80 hover:bg-muted hover:text-foreground"
-                        >
-                          {subLink.label}
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              ) : (
+            {desktopNavLinks.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href!}
@@ -100,8 +97,7 @@ export function Header() {
                 >
                   {link.label}
                 </Link>
-              )
-            })}
+            ))}
           </nav>
           <div className="flex items-center gap-1">
             {session ? (
@@ -133,32 +129,14 @@ export function Header() {
                 </div>
                 <nav className="flex flex-1 flex-col gap-4 p-4">
                   {mobileNavLinks.map((link) => (
-                    link.subLinks ? (
-                        <div key={link.label}>
-                            <p className="p-2 text-lg font-medium text-foreground/60">{link.label}</p>
-                            <div className="flex flex-col pl-4">
-                                {link.subLinks.map(subLink => (
-                                    <SheetClose asChild key={subLink.href}>
-                                        <Link
-                                            href={subLink.href}
-                                            className="rounded-md p-2 text-lg font-medium text-foreground/80 transition-colors hover:bg-muted hover:text-foreground"
-                                        >
-                                            {subLink.label}
-                                        </Link>
-                                    </SheetClose>
-                                ))}
-                            </div>
-                        </div>
-                    ) : (
-                        <SheetClose asChild key={link.href}>
-                            <Link
-                                href={link.href!}
-                                className="rounded-md p-2 text-lg font-medium text-foreground/80 transition-colors hover:bg-muted hover:text-foreground"
-                            >
-                                {link.label}
-                            </Link>
-                        </SheetClose>
-                    )
+                    <SheetClose asChild key={link.href}>
+                        <Link
+                            href={link.href!}
+                            className="rounded-md p-2 text-lg font-medium text-foreground/80 transition-colors hover:bg-muted hover:text-foreground"
+                        >
+                            {link.label}
+                        </Link>
+                    </SheetClose>
                   ))}
                 </nav>
                 <div className="mt-auto flex items-center justify-start gap-2 border-t p-4">

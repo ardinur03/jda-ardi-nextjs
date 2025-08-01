@@ -4,8 +4,13 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url  	    = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  MEMBER
 }
 
 model User {
@@ -13,8 +18,10 @@ model User {
   name      String?
   email     String?  @unique
   password  String?
+  role      Role     @default(MEMBER)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
   @@map("users")
 }
 
@@ -29,5 +36,6 @@ model Project {
   tags            String[] @db.VarChar
   livePreview     String?  @db.VarChar
   createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
+
   @@map("projects")
 }

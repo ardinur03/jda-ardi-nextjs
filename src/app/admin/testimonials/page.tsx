@@ -1,8 +1,15 @@
+
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { addTestimonial, updateTestimonial, deleteTestimonial, } from '@/redux/slices/testimonialsSlice';
+import {
+  addTestimonial,
+  updateTestimonial,
+  deleteTestimonial,
+} from '@/redux/slices/testimonialsSlice';
+import type { RootState, AppDispatch } from '@/redux/store';
+import type { Testimonial } from '@/redux/slices/testimonialsSlice';
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -19,7 +26,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   DialogClose,
 } from "@/components/ui/dialog";
 import {
@@ -31,15 +37,14 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Loader2, PlusCircle, Trash, Edit } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
-import { RootState, AppDispatch } from '@/redux/store';
-import { Testimonial } from '@/redux/slices/testimonialsSlice';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 
 export default function AdminTestimonialsPage() {
   const testimonials = useSelector((state: RootState) => state.testimonials.testimonials);
@@ -50,7 +55,21 @@ export default function AdminTestimonialsPage() {
   const [dialogMode, setDialogMode] = useState<'create' | 'edit'>('create');
   const [selectedTestimonial, setSelectedTestimonial] = useState<Testimonial | null>(null);
   const [formData, setFormData] = useState({ id: '', name: '', text: '' });
+  
+  const { data: session, status } = useSession();
+  const router = useRouter();
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+        toast({
+            variant: "destructive",
+            title: "Access Denied",
+            description: "You must be logged in to view this page.",
+        });
+        router.push('/login');
+    }
+  }, [status, router, toast]);
 
   const openDialog = (mode: 'create' | 'edit', testimonial?: Testimonial) => {
     setDialogMode(mode);
@@ -98,10 +117,21 @@ export default function AdminTestimonialsPage() {
     setAlertDialogOpen(true);
   };
 
+  if (status !== 'authenticated') {
+    return (
+      <main className="flex min-h-screen w-full items-center justify-center bg-background p-4">
+        <Loader2 className="h-16 w-16 animate-spin text-primary" />
+      </main>
+    );
+  }
+
   return (
-    <main className="container mx-auto py-10">
+    <>
       <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold">Manage Testimonials</h1>
+        <div>
+          <h1 className="text-2xl font-bold">Manage Testimonials</h1>
+          <p className="text-muted-foreground">A list of all testimonials in your application.</p>
+        </div>
         <Button onClick={() => openDialog('create')}>
           <PlusCircle className="mr-2 h-4 w-4" /> Add New Testimonial
         </Button>
@@ -137,12 +167,12 @@ export default function AdminTestimonialsPage() {
         </Table>
       </div>
 
-        <AlertDialog open={alertDialogOpen} onOpenChange={setAlertDialogOpen}>
+       <AlertDialog open={alertDialogOpen} onOpenChange={setAlertDialogOpen}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Apakah anda yakin?</AlertDialogTitle>
+              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
               <AlertDialogDescription>
-                Tindakan ini tidak dapat dibatalkan. Ini akan menghapus testimonial secara permanen dari "{selectedTestimonial?.name}".
+                This action cannot be undone. This will permanently delete the testimonial from "{selectedTestimonial?.name}".
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
@@ -191,6 +221,7 @@ export default function AdminTestimonialsPage() {
           </form>
         </DialogContent>
       </Dialog>
-    </main>
+    </>
   );
 }
+

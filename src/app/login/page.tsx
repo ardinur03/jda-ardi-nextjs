@@ -31,8 +31,16 @@ export default function LoginPage() {
 
       if (result?.error) {
         setError("Invalid email or password. Please try again.");
-      } else {
-        router.push("/dashboard");
+      } else if (result?.ok) {
+        // Fetch session to get user role
+        const sessionRes = await fetch('/api/auth/session');
+        const session = await sessionRes.json();
+        
+        if (session?.user?.role === 'ADMIN') {
+          router.push("/admin/dashboard");
+        } else {
+          router.push("/dashboard");
+        }
       }
     } catch (err) {
       setError("An unexpected error occurred. Please try again.");
@@ -57,7 +65,7 @@ export default function LoginPage() {
               <Input
                 id="email"
                 type="email"
-                placeholder="hello@ardi.blue"
+                placeholder="m@example.com"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}

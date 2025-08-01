@@ -4,30 +4,16 @@ import { useSession } from "next-auth/react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Loader2 } from "lucide-react";
-import { Breadcrumb } from "@/components/breadcrumb";
 
-export default function DashboardPage() {
+export default function MemberDashboardPage() {
   const { data: session, status } = useSession();
 
-  const breadcrumbItems = [
-    { href: '/', label: 'Home' },
-    { href: '/dashboard', label: 'Dashboard', isCurrent: true },
-  ];
-
-  if (status === "loading") {
+  if (status === "loading" || !session?.user) {
     return (
-      <main className="flex min-h-[calc(100vh-10rem)] w-full items-center justify-center bg-background py-16 sm:py-24">
+      <div className="flex min-h-[calc(100vh-10rem)] w-full items-center justify-center p-4">
         <Loader2 className="h-16 w-16 animate-spin text-primary" />
-      </main>
+      </div>
     );
-  }
-
-  if (status === "unauthenticated" || !session?.user) {
-     return (
-        <main className="flex min-h-[calc(100vh-10rem)] w-full items-center justify-center bg-background py-16 sm:py-24">
-            <p>You must be logged in to view this page.</p>
-        </main>
-     )
   }
   
   const user = session.user;
@@ -37,28 +23,32 @@ export default function DashboardPage() {
     .join('')
     .toUpperCase();
 
+
   return (
-    <main className="w-full bg-background py-16 sm:py-24">
-         <div className="container mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-            <Breadcrumb items={breadcrumbItems} className="mb-8" />
-            <Card>
-                <CardHeader className="flex flex-row items-center gap-4">
-                    <Avatar className="h-20 w-20">
-                        <AvatarImage src={user.image || ''} alt={user.name || ''} />
-                        <AvatarFallback>{initials}</AvatarFallback>
-                    </Avatar>
-                    <div>
-                        <CardTitle className="text-3xl font-bold">{user.name}</CardTitle>
-                        <CardDescription>Welcome back to your dashboard.</CardDescription>
-                    </div>
-                </CardHeader>
-                <CardContent>
-                    <div className="space-y-2">
-                        <p><strong>Email:</strong> {user.email}</p>
-                    </div>
-                </CardContent>
-            </Card>
-        </div>
-    </main>
+    <>
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold">Member Dashboard</h1>
+        <p className="text-muted-foreground">Welcome to your dashboard, {user.name}!</p>
+      </div>
+       <Card>
+            <CardHeader className="flex flex-row items-center gap-4">
+                <Avatar className="h-20 w-20">
+                    <AvatarImage src={user.image || ''} alt={user.name || ''} />
+                    <AvatarFallback>{initials}</AvatarFallback>
+                </Avatar>
+                <div>
+                    <CardTitle className="text-3xl font-bold">{user.name} (Member)</CardTitle>
+                    <CardDescription>This is your personal dashboard area.</CardDescription>
+                </div>
+            </CardHeader>
+            <CardContent>
+                <div className="space-y-2">
+                    <p><strong>Email:</strong> {user.email}</p>
+                    <p><strong>User ID:</strong> {user.id}</p>
+                    <p><strong>Role:</strong> {user.role}</p>
+                </div>
+            </CardContent>
+        </Card>
+    </>
   );
 }

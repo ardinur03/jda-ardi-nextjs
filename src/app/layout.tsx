@@ -1,4 +1,6 @@
-import type { Metadata } from 'next';
+
+"use client";
+
 import './globals.css';
 import { Inter, Manrope } from 'next/font/google';
 import { cn } from '@/lib/utils';
@@ -8,6 +10,7 @@ import { Footer } from '@/components/footer';
 import { Toaster } from "@/components/ui/toaster"
 import { ReduxProvider } from '@/redux/provider';
 import AuthProvider from '@/components/auth-provider';
+import { usePathname } from 'next/navigation';
 
 const fontBody = Inter({
   subsets: ['latin'],
@@ -20,19 +23,19 @@ const fontHeadline = Manrope({
   variable: '--font-headline',
 });
 
-export const metadata: Metadata = {
-  title: 'Build With Zelo',
-  description: 'A premium portfolio for a professional developer.',
-};
-
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const pathname = usePathname();
+  const isDashboardRoute = pathname.startsWith('/dashboard') || pathname.startsWith('/admin');
+
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
+        <title>Build With Zelo</title>
+        <meta name="description" content="A premium portfolio for a professional developer." />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
@@ -46,22 +49,21 @@ export default function RootLayout({
           fontBody.variable,
           fontHeadline.variable
         )}
-        suppressHydrationWarning={true}
       >
         <AuthProvider>
-          <ReduxProvider>
-              <ThemeProvider
-              attribute="class"
-              defaultTheme="system"
-              enableSystem
-              disableTransitionOnChange
-              >
-              <Header />
-              {children}
-              <Footer />
-              <Toaster />
-              </ThemeProvider>
-          </ReduxProvider>
+            <ReduxProvider>
+                <ThemeProvider
+                attribute="class"
+                defaultTheme="system"
+                enableSystem
+                disableTransitionOnChange
+                >
+                {!isDashboardRoute && <Header />}
+                {children}
+                {!isDashboardRoute && <Footer />}
+                <Toaster />
+                </ThemeProvider>
+            </ReduxProvider>
         </AuthProvider>
       </body>
     </html>
