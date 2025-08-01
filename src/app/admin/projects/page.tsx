@@ -47,6 +47,8 @@ import {
 } from "@/components/ui/select";
 import { z } from "zod";
 import Image from 'next/image';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 
 
 const projectFormSchema = z.object({
@@ -77,8 +79,22 @@ export default function AdminProjectsPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [uploading, setUploading] = useState(false);
 
-
+  const { data: session, status } = useSession();
+  const router = useRouter();
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+        toast({
+            variant: "destructive",
+            title: "Access Denied",
+            description: "You must be logged in to view this page.",
+        });
+        router.push('/login');
+    } else if (status === 'authenticated') {
+        fetchProjects();
+    }
+  }, [status, router, toast]);
 
   const fetchProjects = async () => {
     try {
@@ -101,9 +117,6 @@ export default function AdminProjectsPage() {
     }
   };
 
-  useEffect(() => {
-    fetchProjects();
-  }, []);
 
   const resetForm = () => {
     setFormData({});
@@ -144,28 +157,28 @@ export default function AdminProjectsPage() {
     if (!file) return;
 
     setUploading(true);
-    const uploadFormData = new FormData();
-    uploadFormData.append('file', file);
+
+    const formData = new FormData();
+    formData.append('file', file);
 
     try {
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: uploadFormData,
-      });
+        const response = await fetch('/api/upload', {
+            method: 'POST',
+            body: formData,
+        });
 
-      const result = await response.json();
+        const result = await response.json();
 
-      if (result.success) {
-        setFormData(prev => ({ ...prev, image: result.path }));
+        if (!response.ok) {
+            throw new Error(result.message || 'Image upload failed');
+        }
+
+        setFormData(prev => ({ ...prev, image: result.url }));
         toast({ title: 'Success', description: 'Image uploaded successfully.' });
-      } else {
-        throw new Error(result.message || 'Image upload failed');
-      }
     } catch (error: any) {
-      toast({ variant: 'destructive', title: 'Upload Error', description: error.message });
-      setFormData(prev => ({ ...prev, image: undefined }));
+        toast({ variant: 'destructive', title: 'Upload Error', description: error.message });
     } finally {
-      setUploading(false);
+        setUploading(false);
     }
   };
 
@@ -263,18 +276,21 @@ export default function AdminProjectsPage() {
     }
   };
   
-  if (loading) {
+  if (loading || status !== 'authenticated') {
     return (
-      <main className="flex min-h-screen w-full items-center justify-center bg-background py-16 sm:py-24">
+      <div className="flex min-h-screen w-full items-center justify-center p-4">
         <Loader2 className="h-16 w-16 animate-spin text-primary" />
-      </main>
+      </div>
     );
   }
 
   return (
-    <main className="container mx-auto py-10">
+    <>
       <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold">Manage Projects</h1>
+        <div>
+            <h1 className="text-2xl font-bold">Manage Projects</h1>
+            <p className="text-muted-foreground">A list of all projects in your application.</p>
+        </div>
         <Button onClick={() => openDialog('create')}>
           <PlusCircle className="mr-2 h-4 w-4" /> Add New Project
         </Button>
@@ -286,6 +302,7 @@ export default function AdminProjectsPage() {
             <TableRow>
               <TableHead>Title</TableHead>
               <TableHead>Category</TableHead>
+              <TableHead>Tags</TableHead>
               <TableHead className="w-[150px]">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -294,6 +311,11 @@ export default function AdminProjectsPage() {
               <TableRow key={project.id}>
                 <TableCell className="font-medium">{project.title}</TableCell>
                 <TableCell>{project.category}</TableCell>
+                <TableCell>
+                  <div className="flex flex-wrap gap-1">
+                    {project.tags?.map(tag => <Badge key={tag} variant="secondary">{tag}</Badge>)}
+                  </div>
+                </TableCell>
                 <TableCell>
                   <div className="flex gap-2">
                     <Button variant="outline" size="icon" onClick={() => openDialog('edit', project)}>
@@ -374,7 +396,7 @@ export default function AdminProjectsPage() {
               {formErrors.longDescription && <p className="text-sm text-destructive mt-1">{formErrors.longDescription}</p>}
             </div>
 
-            {/* <div>
+            <div>
               <Label htmlFor="image">Image</Label>
               <div className="mt-2 flex items-center gap-4">
                   {formData.image ? (
@@ -399,7 +421,7 @@ export default function AdminProjectsPage() {
                     <p className="text-xs text-muted-foreground mt-2">Upload a project image.</p>
                   </div>
               </div>
-            </div> */}
+            </div>
 
             <div>
               <Label htmlFor="livePreview">Live Preview URL</Label>
@@ -440,6 +462,6 @@ export default function AdminProjectsPage() {
           </form>
         </DialogContent>
       </Dialog>
-    </main>
+    </>
   );
 }

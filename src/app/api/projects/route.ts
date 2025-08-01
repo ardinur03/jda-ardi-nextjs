@@ -1,29 +1,31 @@
+
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import db from '@/lib/db';
 import { z } from 'zod';
 
+// Skema validasi untuk proyek baru
 const projectSchema = z.object({
   title: z.string().min(1, 'Title is required'),
   description: z.string().min(1, 'Description is required'),
   category: z.string().min(1, 'Category is required'),
   longDescription: z.string().min(1, 'Long description is required'),
   tags: z.array(z.string()).optional(),
-  livePreview: z.string().optional(), // Dibuat opsional
-  image: z.string().optional(), // Dibuat opsional
+  livePreview: z.string().optional(),
+  image: z.string().optional(),
 });
 
 // GET semua proyek
 export async function GET() {
-  const { data, error } = await supabase
-    .from('projects')
-    .select('*')
-    .order('created_at', { ascending: false });
-
-  if (error) {
+  try {
+    const projects = await db.project.findMany({
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+    return NextResponse.json({ message: 'Projects retrieved successfully', data: projects, status: 'success' });
+  } catch (error: any) {
     return NextResponse.json({ message: error.message, data: null, status: 'error' }, { status: 500 });
   }
-
-  return NextResponse.json({ message: 'Projects retrieved successfully', data, status: 'success' });
 }
 
 // POST proyek baru
@@ -43,26 +45,18 @@ export async function POST(request: Request) {
 
     const slug = title.toLowerCase().replace(/\s+/g, '-').slice(0, 50);
 
-    const { data: newProject, error } = await supabase
-      .from('projects')
-      .insert([
-        { 
-          title, 
-          description, 
-          category, 
-          longDescription, 
-          tags,
-          slug,
-          livePreview: livePreview || '#',
-          image: image || "https://placehold.co/600x400.png",
-        }
-      ])
-      .select()
-      .single();
-
-    if (error) {
-      throw error;
-    }
+    const newProject = await db.project.create({
+      data: {
+        title, 
+        description, 
+        category, 
+        longDescription, 
+        tags: tags || [],
+        slug,
+        livePreview: livePreview || '#',
+        image: image || "https://placehold.co/600x400.png",
+      }
+    });
 
     return NextResponse.json({ message: 'Project created successfully', data: newProject, status: 'success' }, { status: 201 });
   } catch (error: any) {

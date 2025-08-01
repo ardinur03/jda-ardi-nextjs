@@ -1,9 +1,10 @@
+
 "use client";
 
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu } from "lucide-react";
+import { Menu, LogIn, LogOut } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { cn } from "@/lib/utils";
@@ -14,35 +15,72 @@ import {
   SheetTrigger,
   SheetClose,
 } from "@/components/ui/sheet";
+import { signIn, signOut, useSession } from "next-auth/react";
 
-const baseNavLinks = [
+const navLinksRaw = [
   { href: "/#home", label: "Home" },
   { href: "/about", label: "About" },
-  { href: "/service", label: "Service" },
-  { href: "/#project", label: "Project" },
+  { href: "/services", label: "Services" },
+  { href: "/#projects", label: "Projects" },
   { href: "/faq", label: "FAQ" },
-  { href: "/#kontak", label: "Kontak" },
-  { href: "/admin/projects", label: "Admin" },
+  { 
+    label: "Admin",
+    auth: true, 
+    role: "ADMIN",
+    href: "/admin/dashboard",
+  },
+   { 
+    label: "Dashboard",
+    auth: true, 
+    role: "MEMBER",
+    href: "/dashboard",
+  },
+  { href: "/#contact", label: "Contact" },
 ];
 
+
 export function Header() {
-
   const pathname = usePathname();
+  const { data: session } = useSession();
 
-  const navLinks = baseNavLinks.map(link => {
-    if (pathname !== '/' && link.href.includes('/#')) {
-      return { ...link, href: `/${link.href.slice(1)}` };
-    }
-    if (pathname === '/' && link.href.includes('/#')) {
-      return { ...link, href: link.href.replace('/#', '#') };
-    }
-    return link;
-  });
+  const getNavLinks = (isMobile: boolean) => {
+    return navLinksRaw
+      .filter(link => {
+        if (pathname.startsWith('/admin') || pathname.startsWith('/dashboard')) return false;
+        if (!link.auth) return true;
+        if (!session) return false;
+        if (link.role) return session.user.role === link.role;
+        return true;
+      })
+      .map(link => {
+          const processHref = (href: string) => {
+              if (isMobile) {
+                if (pathname !== '/' && href.includes('/#')) {
+                    return `/${href.slice(1)}`;
+                }
+                if (pathname === '/' && href.includes('/#')) {
+                    return href.replace('/#', '#');
+                }
+              }
+              return href;
+          };
+          
+          if (link.href) {
+            return {...link, href: processHref(link.href)};
+          }
+          return link;
+    });
+  };
+
+  const desktopNavLinks = getNavLinks(false);
+  const mobileNavLinks = getNavLinks(true);
+
 
   return (
     <header
       className={cn(
-        "sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur-lg"
+        "sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur-lg",
+         (pathname.startsWith('/admin') || pathname.startsWith('/dashboard')) && "hidden"
       )}
     >
       <div className="container mx-auto flex h-20 items-center justify-between px-4 sm:px-6 lg:px-8">
@@ -51,17 +89,26 @@ export function Header() {
         {/* Desktop Navigation */}
         <div className="hidden items-center gap-6 md:flex">
           <nav className="flex items-center gap-6">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="text-sm font-medium text-foreground/80 transition-colors hover:text-foreground"
-              >
-                {link.label}
-              </Link>
+            {desktopNavLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href!}
+                  className="text-sm font-medium text-foreground/80 transition-colors hover:text-foreground"
+                >
+                  {link.label}
+                </Link>
             ))}
           </nav>
           <div className="flex items-center gap-1">
+            {session ? (
+                <Button variant="ghost" size="icon" onClick={() => signOut()}>
+                    <LogOut />
+                </Button>
+            ) : (
+                <Button variant="ghost" size="icon" onClick={() => signIn()}>
+                    <LogIn />
+                </Button>
+            )}
             <ThemeToggle />
           </div>
         </div>
@@ -81,19 +128,24 @@ export function Header() {
                   <Logo />
                 </div>
                 <nav className="flex flex-1 flex-col gap-4 p-4">
-                  {navLinks.map((link) => (
+                  {mobileNavLinks.map((link) => (
                     <SheetClose asChild key={link.href}>
-                      <Link
-                        href={link.href}
-                        className="rounded-md p-2 text-lg font-medium text-foreground/80 transition-colors hover:bg-muted hover:text-foreground"
-                      >
-                        {link.label}
-                      </Link>
+                        <Link
+                            href={link.href!}
+                            className="rounded-md p-2 text-lg font-medium text-foreground/80 transition-colors hover:bg-muted hover:text-foreground"
+                        >
+                            {link.label}
+                        </Link>
                     </SheetClose>
                   ))}
                 </nav>
                 <div className="mt-auto flex items-center justify-start gap-2 border-t p-4">
-                  <ThemeToggle />
+                    {session ? (
+                        <Button onClick={() => signOut()} className="w-full">Logout</Button>
+                    ) : (
+                         <Button onClick={() => signIn()} className="w-full">Login</Button>
+                    )}
+                    <ThemeToggle />
                 </div>
               </div>
             </SheetContent>

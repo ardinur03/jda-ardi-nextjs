@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import db from '@/lib/db';
 import { z } from 'zod';
 
 type Params = {
@@ -22,17 +22,19 @@ const projectUpdateSchema = z.object({
 // GET satu proyek berdasarkan ID
 export async function GET(request: Request, { params }: Params) {
   const { id } = params;
-  const { data, error } = await supabase
-    .from('projects')
-    .select('*')
-    .eq('id', id)
-    .single();
+  try {
+    const project = await db.project.findUnique({
+      where: { id },
+    });
 
-  if (error || !data) {
-    return NextResponse.json({ message: 'Project not found', data: null, status: 'error' }, { status: 404 });
+    if (!project) {
+      return NextResponse.json({ message: 'Project not found', data: null, status: 'error' }, { status: 404 });
+    }
+
+    return NextResponse.json({ message: 'Project retrieved successfully', data: project, status: 'success' });
+  } catch (error: any) {
+    return NextResponse.json({ message: error.message, data: null, status: 'error' }, { status: 500 });
   }
-
-  return NextResponse.json({ message: 'Project retrieved successfully', data, status: 'success' });
 }
 
 // PUT (update) proyek berdasarkan ID
@@ -49,7 +51,6 @@ export async function PUT(request: Request, { params }: Params) {
 
         const updateData: any = { ...parsed.data };
         
-        // Atasi nilai kosong untuk optional fields
         if (updateData.livePreview === '') {
             updateData.livePreview = '#';
         }
@@ -57,28 +58,21 @@ export async function PUT(request: Request, { params }: Params) {
             updateData.image = 'https://placehold.co/600x400.png';
         }
 
-        // Buat slug baru jika title berubah
         if (parsed.data.title) {
             updateData.slug = parsed.data.title.toLowerCase().replace(/\s+/g, '-').slice(0, 50);
         }
 
-        const { data: updatedProject, error } = await supabase
-            .from('projects')
-            .update(updateData)
-            .eq('id', id)
-            .select()
-            .single();
-
-        if (error) {
-            if (error.code === 'P2025') { // Kode Supabase untuk "record not found"
-                return NextResponse.json({ message: 'Project not found', data: null, status: 'error' }, { status: 404 });
-            }
-            throw error;
-        }
+        const updatedProject = await db.project.update({
+            where: { id },
+            data: updateData,
+        });
 
         return NextResponse.json({ message: 'Project updated successfully', data: updatedProject, status: 'success' });
 
     } catch (error: any) {
+        if (error.code === 'P2025') { // Kode Prisma untuk "record to update not found"
+            return NextResponse.json({ message: 'Project not found', data: null, status: 'error' }, { status: 404 });
+        }
         return NextResponse.json({ message: error.message || 'Failed to update project', data: null, status: 'error' }, { status: 500 });
     }
 }
@@ -87,16 +81,16 @@ export async function PUT(request: Request, { params }: Params) {
 export async function DELETE(request: Request, { params }: Params) {
     const { id } = params;
 
-    const { data: deletedProject, error } = await supabase
-        .from('projects')
-        .delete()
-        .eq('id', id)
-        .select()
-        .single();
-    
-    if (error || !deletedProject) {
-        return NextResponse.json({ message: 'Project not found or could not be deleted', data: null, status: 'error' }, { status: 404 });
-    }
+    try {
+        const deletedProject = await db.project.delete({
+            where: { id },
+        });
 
-    return NextResponse.json({ message: 'Project deleted successfully', data: deletedProject, status: 'success' });
+        return NextResponse.json({ message: 'Project deleted successfully', data: deletedProject, status: 'success' });
+    } catch (error: any) {
+        if (error.code === 'P2025') { // Kode Prisma untuk "record to delete not found"
+            return NextResponse.json({ message: 'Project not found', data: null, status: 'error' }, { status: 404 });
+        }
+        return NextResponse.json({ message: error.message || 'Failed to delete project', data: null, status: 'error' }, { status: 500 });
+    }
 }

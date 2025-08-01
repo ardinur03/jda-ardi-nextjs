@@ -11,41 +11,24 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { Quote } from "lucide-react";
+import { useSelector } from "react-redux";
+import type { RootState } from "@/redux/store";
 
-const testimonialData = [
-  {
-    name: "Ilham",
-    text: "Bekerja dengan Zelo adalah perubahan besar. Mereka memberikan website berkualitas tinggi yang melampaui ekspektasi kami, dan perhatian mereka terhadap detail sangat sempurna.",
-  },
-  {
-    name: "Hafidh Dwi",
-    text: "Tim Zelo sangat berbakat dan profesional. Mereka mengubah visi kami menjadi aplikasi web yang menakjubkan dan fungsional. Sangat direkomendasikan!",
-  },
-  {
-    name: "Naufal Maulana",
-    text: "Saya terkesan dengan dedikasi dan keahlian mereka. Zelo memberikan pengalaman yang mulus dari awal hingga akhir, dan produk akhirnya sangat penting bagi kesuksesan kami.",
-  },
-  {
-    name: "Diaz",
-    text: "Solusi digital kreatif Zelo membantu kami meningkatkan merek dan menjangkau audiens yang lebih luas. Sangat menyenangkan bekerja dengan tim mereka.",
-  },
-  {
-    name: "Ahmad Muhtadin",
-    text: "Produk akhirnya tidak hanya indah tetapi juga sangat fungsional. Komitmen Zelo terhadap kualitas terlihat jelas dalam pekerjaan mereka.",
-  },
-];
 
 export function Testimonials() {
   const plugin = React.useRef(
     Autoplay({ delay: 4000, stopOnInteraction: false, stopOnMouseEnter: true })
   );
 
+  // Komponen B: Membaca data dari Redux store menggunakan useSelector
+  const testimonialData = useSelector((state: RootState) => state.testimonials.testimonials);
+
   return (
     <section id="testimonials" className="w-full bg-background py-16 sm:py-24">
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="text-center">
           <h2 className="font-headline text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-           Apa Kata mereka?
+            Apa Kata mereka?
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
             Kami dipercaya oleh bisnis dan individu untuk memberikan solusi digital yang luar biasa.
