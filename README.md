@@ -1,6 +1,16 @@
-# JDA - Muhamad Ardi Nur Insan
+# Informasi Tugas Besar
 
-## Detail Tugas 8
+# Admin
+1. dashboard
+2. Manage Project (CRUD, Using Database)
+3. Manage Testimonials (CRUD, Using Array Statis & redux)
+4. Manage User (CRUD, Using Database)
+5. setting
+6. login
+7. logout
 
-### Database  : Supabase
-### Link CRUD : /admin/projects 
+# Member
+1. dashboard member
+2. setting
+3. login
+4. logout
