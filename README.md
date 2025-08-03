@@ -14,3 +14,12 @@
 2. setting
 3. login
 4. logout
+
+# akun admin
+### email : codewithardi@gmail.com
+### pass  : 12345678
+
+
+# akun member
+### email : ardinurinsan03@gmail.com
+### pass  : 12345678
